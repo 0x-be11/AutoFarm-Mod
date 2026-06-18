@@ -3,23 +3,21 @@ package jacob.autofarm;
 import jacob.autofarm.manager.ConfigManager;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.passive.PassiveEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.network.packet.c2s.play.HandSwingC2SPacket;
-import net.minecraft.text.Text;
-import net.minecraft.util.Hand;
-import net.minecraft.util.hit.EntityHitResult;
-
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.AgeableMob;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.EntityHitResult;
 import java.io.IOException;
 
 import static com.mojang.text2speech.Narrator.LOGGER;
 
 public class AutoFarmClient implements ClientModInitializer {
-	private static final MinecraftClient client = MinecraftClient.getInstance();
+	private static final Minecraft client = Minecraft.getInstance();
 	private long lastHit;
 	private boolean isEating = false;
 	private int previousSlot = -1;
@@ -58,13 +56,13 @@ public class AutoFarmClient implements ClientModInitializer {
 	public static void toggleMod() {
 		AutoFarm.enabled = !AutoFarm.enabled;
 		if (client.player != null) {
-			client.player.sendMessage(Text.of("AutoFarm " + (AutoFarm.enabled ? "enabled" : "disabled")), true);
+			client.player.displayClientMessage(Component.nullToEmpty("AutoFarm " + (AutoFarm.enabled ? "enabled" : "disabled")), true);
 		}
 	}
 
 	private void checkHealth() {
 		if (client.player.getHealth() <= Config.logoutHealth) {
-			client.player.networkHandler.getConnection().disconnect(Text.of("AutoLogout triggered, you were at " + Config.logoutHealth +  " HP!"));
+			client.player.connection.getConnection().disconnect(Component.nullToEmpty("AutoLogout triggered, you were at " + Config.logoutHealth +  " HP!"));
 			AutoFarm.enabled = false;
 		}
 	}
@@ -74,23 +72,23 @@ public class AutoFarmClient implements ClientModInitializer {
 		long timeSinceAttack = currentTime - lastHit;
 		if (Config.swingDelay == 0) return;
 
-		if (client.player.getAttackCooldownProgress(0) >= 1.0F && timeSinceAttack >= Config.swingDelay * 50) {
+		if (client.player.getAttackStrengthScale(0) >= 1.0F && timeSinceAttack >= Config.swingDelay * 50) {
 				simulateAttack();
 				lastHit = currentTime;
 			}
 		}
 	private void simulateAttack() {
-		if (client.player == null || client.interactionManager == null) return;
+		if (client.player == null || client.gameMode == null) return;
 
-		if (client.crosshairTarget instanceof EntityHitResult entityHit) {
+		if (client.hitResult instanceof EntityHitResult entityHit) {
 			Entity target = entityHit.getEntity();
 
-			if (AutoFarmMenu.hostileMob && target instanceof PassiveEntity || target instanceof PlayerEntity){
+			if (AutoFarmMenu.hostileMob && target instanceof AgeableMob || target instanceof Player){
 				return;
 			}
-			client.interactionManager.attackEntity(client.player, entityHit.getEntity());
+			client.gameMode.attack(client.player, entityHit.getEntity());
 
-			client.player.swingHand(Hand.MAIN_HAND);
+			client.player.swing(InteractionHand.MAIN_HAND);
 		}
 	}
 
@@ -103,11 +101,11 @@ public class AutoFarmClient implements ClientModInitializer {
 				return;
 			}
 
-			client.options.useKey.setPressed(true);
+			client.options.keyUse.setDown(true);
 			return;
 		}
 
-		if (client.player.getHungerManager().getFoodLevel() <= Config.eatHunger) {
+		if (client.player.getFoodData().getFoodLevel() <= Config.eatHunger) {
 			int foodSlot = findFoodInHotbar();
 			if (foodSlot != -1) {
 				startEating(foodSlot);
@@ -122,7 +120,7 @@ public class AutoFarmClient implements ClientModInitializer {
 		client.player.getInventory().setSelectedSlot(foodSlot);
 		isEating = true;
 		startEatingTime = System.currentTimeMillis();
-		client.options.useKey.setPressed(true);
+		client.options.keyUse.setDown(true);
 
 		// Log for debugging
 		LOGGER.info("Started eating from slot " + foodSlot);
@@ -131,7 +129,7 @@ public class AutoFarmClient implements ClientModInitializer {
 	private void finishEating() {
 		if (client.player == null) return;
 
-		client.options.useKey.setPressed(false);
+		client.options.keyUse.setDown(false);
 
 		if (previousSlot != -1) {
 			client.player.getInventory().setSelectedSlot(previousSlot);
@@ -148,8 +146,8 @@ public class AutoFarmClient implements ClientModInitializer {
 		if (client.player == null) return -1;
 
 		for (int i = 0; i < 9; i++) {
-			ItemStack stack = client.player.getInventory().getStack(i);
-			if (!stack.isEmpty() && stack.getItem().getComponents().contains(DataComponentTypes.FOOD)) {
+			ItemStack stack = client.player.getInventory().getItem(i);
+			if (!stack.isEmpty() && stack.getItem().components().has(DataComponents.FOOD)) {
 				return i;
 			}
 		}

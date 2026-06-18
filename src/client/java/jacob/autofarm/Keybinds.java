@@ -1,22 +1,21 @@
 package jacob.autofarm;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
-import net.minecraft.client.option.KeyBinding;
-import net.minecraft.client.util.InputUtil;
-import net.minecraft.util.Identifier;
-
+import net.minecraft.client.KeyMapping;
+import net.minecraft.resources.Identifier;
 import org.lwjgl.glfw.GLFW;
 
 public class Keybinds {
     //private static final String CATEGORY = "AutoFarm";
-	private static final KeyBinding.Category CATEGORY = KeyBinding.Category.create(Identifier.of("autofarm", "main"));
-    public static KeyBinding openMenuKey;
+	private static final KeyMapping.Category CATEGORY = KeyMapping.Category.register(Identifier.fromNamespaceAndPath("autofarm", "main"));
+    public static KeyMapping openMenuKey;
 
     public static void register() {
-        openMenuKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+        openMenuKey = KeyBindingHelper.registerKeyBinding(new KeyMapping(
                 "Open Menu",
-                InputUtil.Type.KEYSYM,
+                InputConstants.Type.KEYSYM,
                 GLFW.GLFW_KEY_U,
                 CATEGORY
         ));
