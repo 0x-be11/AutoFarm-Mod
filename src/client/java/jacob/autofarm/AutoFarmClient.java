@@ -56,7 +56,7 @@ public class AutoFarmClient implements ClientModInitializer {
 	public static void toggleMod() {
 		AutoFarm.enabled = !AutoFarm.enabled;
 		if (client.player != null) {
-			client.player.displayClientMessage(Component.nullToEmpty("AutoFarm " + (AutoFarm.enabled ? "enabled" : "disabled")), true);
+			client.player.sendSystemMessage(Component.nullToEmpty("AutoFarm " + (AutoFarm.enabled ? "enabled" : "disabled")));
 		}
 	}
 
