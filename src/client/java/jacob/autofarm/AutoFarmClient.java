@@ -39,7 +39,7 @@ public class AutoFarmClient implements ClientModInitializer {
 		});
 
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
-			if (Keybinds.openMenuKey.wasPressed()) {
+			if (Keybinds.openMenuKey.consumeClick()) {
 				toggleMod();
 			}
 		});
