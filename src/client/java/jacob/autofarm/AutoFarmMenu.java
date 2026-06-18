@@ -2,7 +2,7 @@ package jacob.autofarm;
 
 import jacob.autofarm.manager.ConfigManager;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractSliderButton;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
@@ -124,7 +124,7 @@ public class AutoFarmMenu extends Screen {
     private void checkModState() {
         if (Config.logoutHealth == 0 && Config.swingDelay == 0 && Config.eatHunger == 0) {
             enabled = false;
-            minecraft.player.sendSystemMessage(Component.nullToEmpty("AutoFarm disabled due to slider values being 0."));
+            Minecraft.getInstance().player.sendSystemMessage(Component.nullToEmpty("AutoFarm disabled due to slider values being 0."));
         }
     }
 
@@ -138,22 +138,22 @@ public class AutoFarmMenu extends Screen {
     public static void toggleMod() {
         enabled = !enabled;
         if (enabled) {
-            minecraft.player.sendSystemMessage(Component.nullToEmpty("AutoFarm enabled"));
+            Minecraft.getInstance().player.sendSystemMessage(Component.nullToEmpty("AutoFarm enabled"));
         } else {
-            minecraft.player.sendSystemMessage(Component.nullToEmpty("AutoFarm disabled"));
+            Minecraft.getInstance().player.sendSystemMessage(Component.nullToEmpty("AutoFarm disabled"));
         }
     }
 
     @Override
-    public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
-        super.render(context, mouseX, mouseY, delta);
+    public void extractRenderState(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
+        super.extractRenderState(context, mouseX, mouseY, delta);
         long time = System.currentTimeMillis();
 
         // watermark lol
         float hue = (time % 5000L) / 5000.0f;
         int rgb = java.awt.Color.HSBtoRGB(hue, 0.5f, 1.0f);
 
-        context.drawString(this.font, "AutoFarm Menu - By JacobTheIdiot", 5, 5, rgb, false);
+        context.text(this.font, "AutoFarm Menu - By JacobTheIdiot", 5, 5, rgb, false);
     }
 
 }
