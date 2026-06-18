@@ -124,7 +124,7 @@ public class AutoFarmMenu extends Screen {
     private void checkModState() {
         if (Config.logoutHealth == 0 && Config.swingDelay == 0 && Config.eatHunger == 0) {
             enabled = false;
-            minecraft.player.displayClientMessage(Component.nullToEmpty("AutoFarm disabled due to slider values being 0."), true);
+            minecraft.player.sendSystemMessage(Component.nullToEmpty("AutoFarm disabled due to slider values being 0."));
         }
     }
 
@@ -138,9 +138,9 @@ public class AutoFarmMenu extends Screen {
     public static void toggleMod() {
         enabled = !enabled;
         if (enabled) {
-            minecraft.player.displayClientMessage(Component.nullToEmpty("AutoFarm enabled"), true);
+            minecraft.player.sendSystemMessage(Component.nullToEmpty("AutoFarm enabled"));
         } else {
-            minecraft.player.displayClientMessage(Component.nullToEmpty("AutoFarm disabled"), true);
+            minecraft.player.sendSystemMessage(Component.nullToEmpty("AutoFarm disabled"));
         }
     }
 
